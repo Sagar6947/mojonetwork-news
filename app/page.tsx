@@ -302,15 +302,9 @@ export default function IndianNewsPortal() {
             <div className="flex items-center space-x-6">
               <Link href="/">
                 <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-red-600 to-red-800 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-xl">भ</span>
-                  </div>
-                  <div>
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
-                      भारत न्यूज़
-                    </h1>
-                    <p className="text-xs text-gray-600 font-medium">India's Leading News Portal</p>
-                  </div>
+                  <div className="w-28 h-16 mx-auto relative">
+                             <Image src="/images/mojo-logo.jpg" alt="MojoNetwork" fill className="object-contain"/>
+                           </div>
                 </div>
               </Link>
               <div className="flex items-center space-x-2">
