@@ -1,0 +1,138 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  UNBLOCKED // default
+  BLOCKED
+}
+
+enum UserType {
+  REPORTER // default
+  SUBREPORTER
+}
+
+enum UserOtp {
+  DISABLE
+  ENABLE // default
+}
+
+model tbl_users {
+  id             Int        @id @default(autoincrement())
+  create_date    DateTime
+  update_date    DateTime?
+  name           String?    @db.VarChar(200)
+  email_id       String?    @unique @db.VarChar(200)
+  contact_no     String?    @unique @db.VarChar(200)
+  user_type      UserType   @default(REPORTER)
+  portal_user_id Int
+  user_role_id   Int
+  status         UserStatus @default(UNBLOCKED)
+  is_user_otp    UserOtp    @default(ENABLE)
+
+  portals tbl_portals[]
+
+  @@map("tbl_users")
+}
+
+model tbl_temp_otp {
+  id          Int       @id @default(autoincrement())
+  create_date DateTime
+  update_date DateTime?
+  contact_no  String?   @db.VarChar(20)
+  otp         String?   @db.VarChar(20)
+
+  @@index([contact_no])
+  @@index([otp])
+}
+
+enum DomainType {
+  SUB_DOMAIN // 1
+  MAIN_DOMAIN // 2
+}
+
+enum MainDomainStatus {
+  PENDING // 0
+  ACTIVE // 1
+  INPROGRESS // 2
+  INACTIVE // 3
+}
+
+enum ProfileStatus {
+  INCOMPLETE
+  COMPLETE
+}
+
+enum ToggleStatus {
+  OFF
+  ON
+}
+
+enum VerifyStatus {
+  NOT_VERIFIED
+  VERIFIED
+}
+
+enum PortalStatus {
+  INACTIVE
+  ACTIVE
+}
+
+model tbl_portals {
+  id                       Int              @id @default(autoincrement())
+  create_date              DateTime
+  update_date              DateTime?
+  user_id                  Int
+  portal_id                String?          @db.VarChar(200)
+  domain_type              DomainType
+  channel_name             String?          @db.VarChar(200)
+  channel_language         String?          @db.VarChar(200)
+  domain_name              String?          @unique @db.VarChar(200)
+  main_domain_name         String?          @db.VarChar(200)
+  main_domain_status       MainDomainStatus @default(PENDING)
+  website_logo             String?          @db.VarChar(200)
+  website_favicon          String?          @db.VarChar(200)
+  color_theme_id           Int
+  primary_color            String?          @db.VarChar(200)
+  secondary_color          String?          @db.VarChar(200)
+  text_color               String?          @db.VarChar(200)
+  theme_layout_id          Int
+  state                    String?          @db.VarChar(200)
+  city                     String?          @db.VarChar(200)
+  address                  String?          @db.VarChar(200)
+  site_tag_line            String?          @db.VarChar(200)
+  site_description         String?          @db.VarChar(200)
+  is_profile_complete      ProfileStatus    @default(INCOMPLETE)
+  facebook_url             String?          @db.VarChar(200)
+  instagram_url            String?          @db.VarChar(200)
+  twitter_url              String?          @db.VarChar(200)
+  youtube_url              String?          @db.VarChar(200)
+  channel_intro_video      String?          @db.VarChar(200)
+  channel_outro_video      String?          @db.VarChar(200)
+  reporter_intro_video     String?          @db.VarChar(200)
+  reporter_outro_video     String?          @db.VarChar(200)
+  frame_transition_video   String?          @db.VarChar(200)
+  top_left_category_id     Int
+  top_right_category_id    Int
+  bottom_left_category_id  Int
+  bottom_right_category_id Int
+  whatsapp_access_token    String?          @db.VarChar(200)
+  whatsapp_instance_id     String?          @db.VarChar(200)
+  email_notification       ToggleStatus     @default(OFF)
+  push_notification        ToggleStatus     @default(OFF)
+  comment_notification     ToggleStatus     @default(OFF)
+  news_letter_enabled      ToggleStatus     @default(OFF)
+  site_cache               String?          @db.VarChar(200)
+  is_verify                VerifyStatus     @default(NOT_VERIFIED)
+  status                   PortalStatus     @default(ACTIVE)
+
+  // 👇 Relation: belongs to one user
+  user tbl_users @relation(fields: [user_id], references: [id])
+
+  @@map("tbl_portals")
+}

@@ -303,8 +303,8 @@ export default function IndianNewsPortal() {
               <Link href="/">
                 <div className="flex items-center space-x-3">
                   <div className="w-28 h-16 mx-auto relative">
-                             <Image src="/images/mojo-logo.jpg" alt="MojoNetwork" fill className="object-contain"/>
-                           </div>
+                    <Image src="/images/mojo-logo.jpg" alt="MojoNetwork" fill className="object-contain" />
+                  </div>
                 </div>
               </Link>
               <div className="flex items-center space-x-2">
@@ -354,9 +354,8 @@ export default function IndianNewsPortal() {
                   <Button
                     key={item.name}
                     variant="ghost"
-                    className={`text-white hover:bg-red-600 px-4 py-2 rounded-lg transition-all duration-300 ${
-                      item.active ? "bg-red-600 shadow-lg" : ""
-                    }`}
+                    className={`text-white hover:bg-red-600 px-4 py-2 rounded-lg transition-all duration-300 ${item.active ? "bg-red-600 shadow-lg" : ""
+                      }`}
                   >
                     <span className="mr-2">{item.icon}</span>
                     {item.name}
@@ -418,13 +417,12 @@ export default function IndianNewsPortal() {
                       <span className="text-sm font-mono text-gray-600">{update.time}</span>
                       <Badge
                         variant={update.status === "LIVE" ? "default" : "outline"}
-                        className={`text-xs ${
-                          update.status === "LIVE"
+                        className={`text-xs ${update.status === "LIVE"
                             ? "bg-red-600 animate-pulse"
                             : update.status === "UPDATE"
                               ? "border-blue-500 text-blue-600"
                               : "border-green-500 text-green-600"
-                        }`}
+                          }`}
                       >
                         {update.status}
                       </Badge>

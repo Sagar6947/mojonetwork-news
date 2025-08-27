@@ -13,7 +13,7 @@ interface OTPInputProps {
   className?: string
 }
 
-export function OTPInput({ length = 6, value, onChange, className }: OTPInputProps) {
+export function OTPInput({ length = 5, value, onChange, className }: OTPInputProps) {
   const [otp, setOtp] = useState<string[]>(new Array(length).fill(""))
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
 

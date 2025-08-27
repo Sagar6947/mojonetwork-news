@@ -127,7 +127,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   })
 
   useEffect(() => {
-    // Check if user is authenticated
+    
     const token = localStorage.getItem("adminToken")
     if (!token) {
       router.push("/admin/login")

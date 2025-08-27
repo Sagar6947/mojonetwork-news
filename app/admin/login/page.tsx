@@ -10,15 +10,18 @@ import { OTPInput } from "@/components/ui/otp-input"
 import { Phone, ArrowLeft, Timer } from "lucide-react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
+import { Alert } from "@/hooks/use-alert"
 
 export default function AdminLogin() {
   const router = useRouter()
+  const OTPDigit = 5
   const [step, setStep] = useState<"login" | "otp">("login")
   const [isLoading, setIsLoading] = useState(false)
   const [otp, setOtp] = useState("")
   const [timer, setTimer] = useState(30)
   const [canResend, setCanResend] = useState(false)
   const [phoneNumber, setPhoneNumber] = useState("")
+  const [alertData, setAlertData] = useState<{ variant: "info" | "success" | "danger" | "warning" | "dark"; message: string } | null>(null)
 
   useEffect(() => {
     let interval: NodeJS.Timeout
@@ -36,49 +39,64 @@ export default function AdminLogin() {
     return () => clearInterval(interval)
   }, [step, timer])
 
+  // 🔥 Extracted reusable API call
+  const sendOTP = async (phone: string) => {
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contact_no: phone }),
+      })
+
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error("Error sending OTP:", error)
+      throw new Error("Failed to send OTP")
+    }
+  }
+
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
 
     try {
-      // Simulate API call for phone number verification
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const data = await sendOTP(phoneNumber)
 
-      if (phoneNumber === "9999999999") {
+      if (data.success) {
         setStep("otp")
         setTimer(30)
         setCanResend(false)
       } else {
-        alert("Invalid phone number")
+        setAlertData({ variant: "danger", message: data.message || "Failed to send OTP" })
       }
     } catch (error) {
-      alert("Phone verification failed. Please try again.")
+      setAlertData({ variant: "danger", message: "Phone verification failed. Please try again." })
     } finally {
       setIsLoading(false)
     }
   }
 
   const handleOTPVerify = async () => {
-    if (otp.length !== 6) {
-      alert("Please enter complete OTP")
+    if (otp.length !== OTPDigit) {
+      setAlertData({ variant: "warning", message: "Please enter 5 digit OTP" })
       return
     }
 
     setIsLoading(true)
 
     try {
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000))
 
-      if (otp === "123456") {
+      if (otp === "12345") {
         localStorage.setItem("adminToken", "mock-token")
         router.push("/admin/dashboard")
       } else {
-        alert("Invalid OTP")
+        setAlertData({ variant: "danger", message: "Invalid OTP" })
         setOtp("")
       }
     } catch (error) {
-      alert("OTP verification failed. Please try again.")
+      setAlertData({ variant: "danger", message: "OTP verification failed!" })
     } finally {
       setIsLoading(false)
     }
@@ -87,14 +105,18 @@ export default function AdminLogin() {
   const handleResendOTP = async () => {
     setIsLoading(true)
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      setTimer(30)
-      setCanResend(false)
-      setOtp("")
-      alert("OTP sent successfully!")
+      const data = await sendOTP(phoneNumber) // 🔥 reused same API
+
+      if (data.success) {
+        setTimer(30)
+        setCanResend(false)
+        setOtp("")
+        setAlertData({ variant: "success", message: "OTP resent successfully!" })
+      } else {
+        setAlertData({ variant: "danger", message: data.message || "Failed to resend OTP" })
+      }
     } catch (error) {
-      alert("Failed to resend OTP")
+      setAlertData({ variant: "danger", message: "Failed to resend OTP!" })
     } finally {
       setIsLoading(false)
     }
@@ -111,21 +133,21 @@ export default function AdminLogin() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-4">
           <div className="w-40 h-24 mx-auto relative">
-            <Image src="/images/mojo-logo.jpg" alt="MojoNetwork" fill className="object-contain"/>
+            <Image src="/images/mojo-logo.jpg" alt="MojoNetwork" fill className="object-contain" />
           </div>
           <div>
             <CardTitle className="text-2xl font-bold text-gray-900">
               {step === "login" ? "Admin Login" : "Verify OTP"}
             </CardTitle>
             <CardDescription>
-              {step === "login"
-                ? "Enter your phone number to receive OTP"
-                : "Enter the 6-digit code sent to your phone"}
+              {step === "login" ? "Enter your phone number to receive OTP" : ``}
             </CardDescription>
           </div>
         </CardHeader>
 
         <CardContent>
+          {alertData && <Alert variant={alertData.variant} message={alertData.message} />}
+
           {step === "login" ? (
             <form onSubmit={handlePhoneSubmit} className="space-y-4">
               <div className="space-y-2">
@@ -154,27 +176,15 @@ export default function AdminLogin() {
             </form>
           ) : (
             <div className="space-y-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setStep("login")}
-                  className="p-0 h-auto text-gray-600 hover:text-gray-900"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-1" />
-                  Back to login
-                </Button>
-              </div>
-
               <div className="text-center space-y-4">
                 <p className="text-sm text-gray-600">
-                  We've sent a 6-digit verification code to
+                  We've sent a {OTPDigit}-digit verification code to
                   <br />
                   <span className="font-medium">{phoneNumber}</span>
                 </p>
 
                 <div className="flex justify-center">
-                  <OTPInput length={6} value={otp} onChange={setOtp} />
+                  <OTPInput length={OTPDigit} value={otp} onChange={setOtp} />
                 </div>
 
                 <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
@@ -197,13 +207,21 @@ export default function AdminLogin() {
               <Button
                 onClick={handleOTPVerify}
                 className="w-full bg-red-600 hover:bg-red-700"
-                disabled={isLoading || otp.length !== 6}
+                disabled={isLoading || otp.length !== OTPDigit}
               >
                 {isLoading ? "Verifying..." : "Verify & Continue"}
               </Button>
-
-              <div className="text-center">
-                <p className="text-sm text-gray-600">Demo OTP: 123456</p>
+              <div className="flex items-center justify-between gap-2 mb-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setStep("login")}
+                  className="p-0 h-auto text-gray-600 hover:text-gray-900"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-1" />
+                  Back to login
+                </Button>
+                <p className="text-sm text-gray-600">Demo OTP: 12345</p>
               </div>
             </div>
           )}
